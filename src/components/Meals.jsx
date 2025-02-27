@@ -1,28 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import {getMeals} from "../http.js";
+import { getMeals } from "../http.js";
+import MealItem from './MealItem.jsx';
 
 const Meals = () => {
     const [meals, setMeals] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(false);
 
     useEffect(() => {
         async function getMealsResponse() {
+            setIsLoading(true);
             const response = await getMeals();
-            setMeals(response);  
+            setMeals(response);
+            setIsLoading(false);  
         }
-        getMealsResponse();
+
+        try {
+           getMealsResponse(); 
+           setError(false);
+        } catch (error) {
+            console.log(error.message);
+            setError(true);
+        }
     }, [])
     
     
     return (
     <div id='meals'>
+        {isLoading && <p>Loading meals...</p>}
+        {error && <p>Error getting meals.</p>}
         {meals.map(meal => (
-            <div className='meal-item' key={meal.id}>
-                <img src={`http://localhost:3000/${meal.image}`} alt={meal.name} />
-                <h3>{meal.name}</h3>
-                <p className='meal-item-price'>{meal.price}</p>
-                <p className='meal-item-description'>{meal.description}</p>
-                <button className='meal-item-actions button'>Add to cart</button>
-            </div>
+            <MealItem key={meal.id} meal={meal} />
         ))}
     </div>
   );
