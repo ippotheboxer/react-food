@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 // Components
-import Input from '../Input';
+import Input from '../UI/Input';
 import Modal from '../UI/Modal';
 import Button from '../UI/Button';
 // Context
@@ -27,7 +27,7 @@ const Checkout = () => {
 
   const validate = () => {
     let tempErrors = {};
-    
+
     if (!orderData.name) tempErrors.name = "Name is required.";
     if (!orderData.email) {
       tempErrors.email = "Email is required.";
@@ -43,15 +43,13 @@ const Checkout = () => {
     if (!orderData.city) tempErrors.city = "City is required.";
 
     setErrors(tempErrors);
-    
+
     return Object.keys(tempErrors).length === 0;
   };
-    
-  function handleSubmit(e) {
-    e.preventDefault();
 
+  async function handleSubmit(e) {
+    e.preventDefault();
     if (validate()) {
-      try {
         const filteredCartItems = cartItems.map(({ id, name, price, quantity }) => ({
           id,
           name,
@@ -59,24 +57,29 @@ const Checkout = () => {
           quantity
         }));
 
-        postCheckout({customer: {...orderData}, items: filteredCartItems}
+        const response = await postCheckout(
+          { 
+            customer: { ...orderData }, 
+            items: filteredCartItems 
+          }
         );
-        clearCart();
+        
+        if (!response.ok) {
+          handleFailure();
+        } else {
+          clearCart();
         setOrderData({
-          name: '',
-          email: '',
-          street: '',
-          ['postal-code']: '',
-          city: ''
-        })
+            name: '',
+            email: '',
+            street: '',
+            ['postal-code']: '',
+            city: ''});
 
-        console.log("Form submitted successfully!", orderData);
-        handleSuccess();
-      } catch (error) {
-        console.log("Error while posting.");
-      }
+          console.log("Form submitted successfully!", orderData);
+          handleSuccess();
+        }
     } else {
-      console.log("Validation failed!", errors);
+      console.log("Validation failed!");
     }
   }
 
@@ -92,11 +95,18 @@ const Checkout = () => {
   function handleSuccess() {
     userProgressCtx.showSuccess();
   }
-  
+
+  function handleFailure() {
+    userProgressCtx.showFailure();
+  }
+
   return (
-    <Modal className='cart' open={userProgressCtx.progress === 'checkout'}>
+    <Modal
+      open={userProgressCtx.progress === 'checkout'}
+      onClose={userProgressCtx.progress === 'checkout' ? handleCloseCheckout : null}
+    >
       <p>Cart Total: {currencyFormatter.format(totalPrice)}</p>
-      <form onSubmit={handleSubmit} className='control' >
+      <form onSubmit={handleSubmit} >
         <Input label="Full Name" id="name" value={orderData.name} onChange={handleChange} />
         {errors.name && <p style={{ color: "red" }}>{errors.name}</p>}
 
@@ -106,19 +116,24 @@ const Checkout = () => {
         <Input label="Street" id="street" value={orderData.street} onChange={handleChange} />
         {errors.street && <p style={{ color: "red" }}>{errors.street}</p>}
 
-        <Input label="Postal Code" id="postal-code" value={orderData['postal-code']} onChange={handleChange} />
-        {errors['postal-code'] && <p style={{ color: "red" }}>{errors['postal-code']}</p>}
+        <div className='control-row'>
+          <div>
+            <Input label="Postal Code" id="postal-code" value={orderData['postal-code']} onChange={handleChange} />
+            {errors['postal-code'] && <p style={{ color: "red" }}>{errors['postal-code']}</p>}
+          </div>
+          <div>
+            <Input label="City" id="city" value={orderData.city} onChange={handleChange} />
+            {errors.city && <p style={{ color: "red" }}>{errors.city}</p>}
+          </div>
+        </div>
 
-        <Input label="City" id="city" value={orderData.city} onChange={handleChange} />
-        {errors.city && <p style={{ color: "red" }}>{errors.city}</p>}
-      
-      <p className='modal-actions'>
-        <Button textOnly onClick={handleCloseCheckout}>Close</Button>
-        <Button type="submit">Submit Order</Button>
-      </p>
+        <p className='modal-actions'>
+          <Button textOnly onClick={handleCloseCheckout}>Close</Button>
+          <Button type="submit">Submit Order</Button>
+        </p>
       </form>
 
-      
+
     </Modal>
   );
 }

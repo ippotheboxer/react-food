@@ -21,5 +21,5 @@ export async function postCheckout(orderData) {
         throw new Error('Failed to update user data.');
     }
 
-    return resData.message;
+    return resData;
 }

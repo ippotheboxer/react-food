@@ -7,7 +7,9 @@ const UserProgressContext = createContext({
     showCheckout: () => {},
     hideCheckout: () => {},
     showSuccess: () => {},
-    hideSuccess: () => {}
+    hideSuccess: () => {},
+    showFailure: () => {},
+    hideFailure: () => {}
 })
 
 export function UserProgressContextProvider({ children }) {
@@ -37,6 +39,14 @@ export function UserProgressContextProvider({ children }) {
         setUserProgress('');
     }
 
+    function showFailure() {
+        setUserProgress('failure');
+    }
+
+    function hideFailure() {
+        setUserProgress('');
+    }
+
     const userProgressCtx = {
         progress: userProgress,
         showCart,
@@ -44,7 +54,9 @@ export function UserProgressContextProvider({ children }) {
         showCheckout,
         hideCheckout,
         showSuccess,
-        hideSuccess
+        hideSuccess,
+        showFailure,
+        hideFailure
     }
 
     return (

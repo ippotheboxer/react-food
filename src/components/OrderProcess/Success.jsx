@@ -10,7 +10,7 @@ const Success = () => {
         userProgressCtx.hideSuccess();
     }
   return (
-    <Modal open={userProgressCtx.progress === 'success'}>
+    <Modal open={userProgressCtx.progress === 'success'} onClose={handleCloseSuccess}>
         <div>
             <h2>Order placed!</h2>
             <p>Thank you for your order!</p>
@@ -23,4 +23,4 @@ const Success = () => {
   )
 }
 
-export default Success
+export default Success;
